@@ -6,52 +6,32 @@ const message = require("../../utils/message");
  * 修改密码
  */
 const updatePassword = async (req, res) => {
-  const { uid, password, newPassword } = req.body;
-  if (!uid) {
-    return res.send(message.error("参数传参错误"));
-  } else if (!newPassword) {
+  const { user } = req;
+  const { password, newPassword } = req.body;
+  console.log("updatePasswor ", user);
+  if (!newPassword) {
     return res.send(message.error("新密码不能为空"));
   }
 
   try {
-    // 检查用户名或手机号是否已存在
-    const userQuery = "SELECT * FROM user WHERE id = ?";
-    const userValues = [uid];
+    if (user.pwd && password) {
+      const isMatch = await bcrypt.compare(password, user.pwd);
+      if (!isMatch) {
+        return res.send(message.error("原密码错误"));
+      }
+    } else {
+      return res.send(message.error("原密码不能为空"));
+    }
+    const hashedPassword = await bcrypt.hash(String(newPassword), 10);
+    const updateQuery = "UPDATE user SET pwd = ? WHERE id = ?";
+    const updateValues = [hashedPassword, user.id];
 
-    dbConfig.sqlConnect(userQuery, userValues, async function (err, result) {
+    dbConfig.sqlConnect(updateQuery, updateValues, function (err, result) {
       if (err) {
-        console.error("Error checking user existence:", err);
-        return res.send({ error: message.error() });
+        console.error("Error update pawd:", err);
+        return res.send(message.error());
       }
-
-      if (result.length === 0) {
-        return res.send(message.error("用户不存在"));
-      }
-
-      const user = result[0];
-      // 校验密码
-      if (user.pwd) {
-        const isMatch = await bcrypt.compare(password, user.pwd);
-        if (!isMatch) {
-          return res.send(message.error("密码错误"));
-        }
-      }
-
-      const hashedPassword = await bcrypt.hash(String(newPassword), 10);
-      const insertUserQuery = "UPDATE user SET pwd = ? WHERE id = ?";
-      const insertUserValues = [hashedPassword, uid];
-
-      dbConfig.sqlConnect(
-        insertUserQuery,
-        insertUserValues,
-        function (insertErr, insertResult) {
-          if (insertErr) {
-            console.error("Error inserting user:", insertErr);
-            return res.send({ error: message.error() });
-          }
-          res.send(message.success("修改成功"));
-        }
-      );
+      res.send(message.success("修改成功"));
     });
   } catch (error) {
     console.error("Error password user:", error);
@@ -59,6 +39,21 @@ const updatePassword = async (req, res) => {
   }
 };
 
+/**
+ * 获取用户详情
+ */
+const getUserInfo = (req, res) => {
+  try {
+    const { user } = req;
+    delete user.pwd;
+    res.send(message.dataSuccess(user)); // 在这里发送响应并立即返回
+  } catch (error) {
+    console.error("Error checking user existence:", error);
+    return res.send(message.error());
+  }
+};
+
 module.exports = {
-    updatePassword
+  updatePassword,
+  getUserInfo,
 };

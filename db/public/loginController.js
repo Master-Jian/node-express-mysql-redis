@@ -8,7 +8,7 @@ const RedisClient = require("../../utils/redisClient");
 /**
  * 用户名/手机 密码 - 登录
  */
-pwdToLogin = (req, res) => {
+const pwdToLogin = (req, res) => {
   const { userName, phone, password } = req.body;
   if (!userName && !phone) {
     return res.send(message.error("用户名/手机号不能为空"));
@@ -118,7 +118,7 @@ const registerUser = async (req, res) => {
       async function (err, result) {
         if (err) {
           console.error("Error checking user existence:", err);
-          return res.send({ error: message.error() });
+          return res.send(message.error());
         }
 
         const count = result[0].count;
@@ -143,7 +143,7 @@ const registerUser = async (req, res) => {
           function (insertErr, insertResult) {
             if (insertErr) {
               console.error("Error inserting user:", insertErr);
-              return res.send({ error: message.error() });
+              return res.send(message.error());
             }
             res.send(message.success("创建成功"));
           }

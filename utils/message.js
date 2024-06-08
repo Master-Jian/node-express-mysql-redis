@@ -17,4 +17,5 @@ module.exports = {
   success,
   dataSuccess,
   error,
+  errors,
 };

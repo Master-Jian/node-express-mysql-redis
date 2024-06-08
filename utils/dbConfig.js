@@ -26,9 +26,11 @@ module.exports = {
       }
 
       // 事件驱动回调
-      connection.query(sql, sqlArr, callback);
+      const query = connection.query(sql, sqlArr, callback);
       // 释放连接
       connection.release();
+      
+      return query
     });
   },
 };

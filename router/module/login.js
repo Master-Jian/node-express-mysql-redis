@@ -19,7 +19,7 @@ router.post("/register", login.registerUser);
  * 验证码
  * api/user/sendCode
  */
-router.get("/sendCode", userController.sendCode);
+router.get("/sendCode", login.sendCode);
 
 
 module.exports = router;

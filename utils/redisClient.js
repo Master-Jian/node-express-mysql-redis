@@ -1,7 +1,7 @@
 const Redis = require("ioredis");
 require("dotenv").config();
 
-class RedisClient {
+class client {
   constructor(options = {}) {
     // 默认配置，可以根据需要调整
     const defaultOptions = {
@@ -80,29 +80,31 @@ class RedisClient {
 
   /**
    * 验证token
-   * @param token 获取用户的token
+   * @param argToken 获取用户的token
    */
-  async isTokenValid(token) {
+  async isTokenValid(argToken) {
     try {
-      const data = await this.redisClient.get(token);
+      const data = await this.client.get(argToken);
+
       if (data) {
-        const { token: storeToken, timestamp } = JSON.parse(data);
-        if (storeToken === token) {
-          const ttl = await this.redisClient.client.ttl(storeToken);
+        const { token, timestamp } = JSON.parse(data);
+
+        if (token === argToken) {
+          const ttl = await this.client.ttl(token);
           const time = (Date.now() - timestamp) / 1000;
           if (ttl > 0) {
             return { isValid: true, ttl };
             // 如果 超级，但是在 REDIS_PORT 小时内，续token 1天
           } else if (time <= process.env.REDIS_PORT) {
-            await this.extendExpiry(storeToken, 24 * 60 * 60);
+            await this.extendExpiry(token, 24 * 60 * 60);
             return { isValid: true, extended: true };
           }
         }
       }
-      console.log(`Token for user ${userId} is invalid or expired`);
+      console.log(`argToken for user ${userId} is invalid or expired`);
       return false;
     } catch (err) {
-      console.error("Error checking token validity", err);
+      console.error("Error checking argToken validity", err);
       throw err;
     }
   }
@@ -116,5 +118,5 @@ class RedisClient {
   }
 }
 
-// 导出 RedisClient 类
-module.exports = RedisClient;
+// 导出 client 类
+module.exports = client;

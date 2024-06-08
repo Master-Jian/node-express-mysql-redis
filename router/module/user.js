@@ -6,14 +6,12 @@ const userController = require("../../db/front/userController");
  * 用户详情
  * api/user/info
  */
-router.get("/info", (req, res, next) => {
-  res.send("info");
-});
+router.get("/info", userController.getUserInfo);
 
 /**
  * 修改密码
- * api/login/updatePwd
+ * api/user/updatePwd
  */
-router.post("/updatePwd", login.updatePassword);
+router.post("/updatePwd", userController.updatePassword);
 
 module.exports = router;
